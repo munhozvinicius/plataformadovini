@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExternalLink, Star, DollarSign, FileText, Bot, ArrowLeft } from 'lucide-react';
+import { loadRealProduct } from '@/data/realProductData';
 
 export default function DynamicProductPage() {
   const { productId } = useParams();
@@ -13,56 +14,23 @@ export default function DynamicProductPage() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    loadProductData();
+    loadProductDataReal();
   }, [productId]);
 
-  const loadProductData = () => {
+  const loadProductDataReal = () => {
     try {
-      // Verificar se o produto existe na lista de produtos criados
-      const adminProducts = JSON.parse(localStorage.getItem('admin-products') || '{}');
-      if (!adminProducts[productId]) {
+      const data = loadRealProduct(productId);
+      
+      if (!data) {
         setNotFound(true);
         setLoading(false);
         return;
       }
-
-      // Carregar dados do produto
-      const savedData = localStorage.getItem(`product-data-${productId}`);
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        
-        // Adicionar informações básicas do produto
-        const productInfo = {
-          id: productId,
-          fullName: adminProducts[productId],
-          emoji: adminProducts[productId].split(' ')[0],
-          name: adminProducts[productId].substring(adminProducts[productId].indexOf(' ') + 1),
-          ...parsed
-        };
-        
-        setProductData(productInfo);
-      } else {
-        // Se não há dados salvos, criar estrutura básica
-        const productInfo = {
-          id: productId,
-          fullName: adminProducts[productId],
-          emoji: adminProducts[productId].split(' ')[0],
-          name: adminProducts[productId].substring(adminProducts[productId].indexOf(' ') + 1),
-          characteristics: '',
-          characteristicsTitle: 'Características Principais',
-          pricingTable: [],
-          pricingTableTitle: 'Tabela de Preços',
-          observations: '',
-          observationsTitle: 'Observações Importantes',
-          aiAgents: []
-        };
-        
-        setProductData(productInfo);
-      }
       
+      setProductData(data);
       setLoading(false);
     } catch (error) {
-      console.error('Erro ao carregar produto:', error);
+      console.error('Erro ao carregar produto REAL:', error);
       setNotFound(true);
       setLoading(false);
     }

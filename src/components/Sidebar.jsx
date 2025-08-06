@@ -15,20 +15,10 @@ import {
   Settings, 
   LogOut 
 } from 'lucide-react';
+import { getAllRealProducts } from '@/data/realProductData';
 
 const defaultMenuItems = [
   { icon: Home, label: 'Início', path: '/', emoji: '🏠', id: 'inicio' },
-];
-
-const defaultProductItems = [
-  { icon: Phone, label: 'Vivo SIP', path: '/vivo-sip', emoji: '📞', id: 'vivo-sip' },
-  { icon: PhoneCall, label: 'Vivo 0800', path: '/vivo-0800', emoji: '📞', id: 'vivo-0800' },
-  { icon: Mic, label: 'Vivo Voz Negócios', path: '/vivo-voz-negocios', emoji: '🎤', id: 'vivo-voz-negocios' },
-  { icon: Wifi, label: 'Vivo Internet (Fibra)', path: '/vivo-internet-fibra', emoji: '📡', id: 'vivo-internet-fibra' },
-  { icon: Globe, label: 'Vivo Internet Dedicada', path: '/vivo-internet-dedicada', emoji: '🌐', id: 'vivo-internet-dedicada' },
-  { icon: Package, label: 'Combo Vivo SIP + Internet Dedicada', path: '/combo-vivo-sip-internet-dedicada', emoji: '📦', id: 'combo-vivo-sip-internet-dedicada' },
-  { icon: Laptop, label: 'Licenças Microsoft', path: '/licencas-microsoft', emoji: '💻', id: 'licencas-microsoft' },
-  { icon: Bot, label: 'Ajuda AI', path: '/ajuda-ai', emoji: '🤖', id: 'ajuda-ai' },
 ];
 
 const defaultBottomItems = [
@@ -43,20 +33,20 @@ const adminItems = [
 export default function Sidebar() {
   const location = useLocation();
   const [hoveredItem, setHoveredItem] = useState(null);
-  const [productItems, setProductItems] = useState(defaultProductItems);
+  const [productItems, setProductItems] = useState([]);
 
   useEffect(() => {
-    loadProducts();
+    loadRealProducts();
     
-    // Escutar mudanças no localStorage
+    // Escutar mudanças no localStorage para produtos REAIS
     const handleStorageChange = () => {
-      loadProducts();
+      loadRealProducts();
     };
     
     window.addEventListener('storage', handleStorageChange);
     
-    // Também escutar mudanças locais (quando a página atual faz mudanças)
-    const interval = setInterval(loadProducts, 1000);
+    // Também escutar mudanças locais
+    const interval = setInterval(loadRealProducts, 2000);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
@@ -64,60 +54,22 @@ export default function Sidebar() {
     };
   }, []);
 
-  const loadProducts = () => {
+  const loadRealProducts = () => {
     try {
-      // Carregar produtos ocultos
-      const hiddenProducts = JSON.parse(localStorage.getItem('admin-hidden-products') || '{}');
+      const realProducts = getAllRealProducts();
       
-      // Carregar ordem dos produtos
-      const productOrder = JSON.parse(localStorage.getItem('product-order') || '[]');
+      const productMenuItems = realProducts.map(product => ({
+        icon: Package, // Ícone padrão para produtos
+        label: product.name,
+        path: product.path || `/${product.id}`,
+        emoji: product.emoji,
+        id: product.id
+      }));
       
-      // Carregar produtos criados dinamicamente
-      const adminProducts = JSON.parse(localStorage.getItem('admin-products') || '{}');
-      
-      // Criar lista de produtos dinâmicos
-      const dynamicProducts = Object.entries(adminProducts).map(([id, fullName]) => {
-        const emoji = fullName.split(' ')[0];
-        const name = fullName.substring(fullName.indexOf(' ') + 1);
-        return {
-          icon: Package, // Ícone padrão para produtos criados
-          label: name,
-          path: `/${id}`,
-          emoji: emoji,
-          id: id
-        };
-      });
-
-      // Combinar produtos padrão e dinâmicos
-      const allProducts = [...defaultProductItems, ...dynamicProducts];
-      
-      // Aplicar ordem se existir
-      let orderedProducts;
-      if (productOrder.length > 0) {
-        orderedProducts = [];
-        // Primeiro, adicionar produtos na ordem salva
-        productOrder.forEach(savedId => {
-          const product = allProducts.find(p => p.id === savedId);
-          if (product && !hiddenProducts[savedId]) {
-            orderedProducts.push(product);
-          }
-        });
-        // Depois, adicionar produtos novos que não estão na ordem salva
-        allProducts.forEach(product => {
-          if (!productOrder.includes(product.id) && !hiddenProducts[product.id]) {
-            orderedProducts.push(product);
-          }
-        });
-      } else {
-        // Se não há ordem salva, usar ordem padrão, mas filtrar ocultos
-        orderedProducts = allProducts.filter(product => !hiddenProducts[product.id]);
-      }
-
-      setProductItems(orderedProducts);
+      setProductItems(productMenuItems);
     } catch (error) {
-      console.error('Erro ao carregar produtos:', error);
-      // Em caso de erro, usar produtos padrão
-      setProductItems(defaultProductItems);
+      console.error('Erro ao carregar produtos REAIS:', error);
+      setProductItems([]);
     }
   };
 
