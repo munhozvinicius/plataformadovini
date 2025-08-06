@@ -2,23 +2,17 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Bot, DollarSign, Zap, ArrowRight, Bell, ExternalLink, Sparkles } from 'lucide-react';
+import { loadHomeData } from '@/data/homeData';
 
 export default function Home() {
-  const [updateData, setUpdateData] = useState({
-    title: 'Última Atualização',
-    description: 'Sistema atualizado com novas funcionalidades e melhorias na interface. Confira os novos recursos disponíveis na área administrativa.',
-    date: '31/07/2025'
-  });
-
+  const [homeData, setHomeData] = useState(null);
   const [microsoftCards, setMicrosoftCards] = useState([]);
   const [ajudaAiCards, setAjudaAiCards] = useState([]);
 
-  // Carregar dados do localStorage
+  // Carregar dados centralizados da Home
   useEffect(() => {
-    const savedUpdateData = localStorage.getItem('admin-update-data');
-    if (savedUpdateData) {
-      setUpdateData(JSON.parse(savedUpdateData));
-    }
+    const data = loadHomeData();
+    setHomeData(data);
 
     const savedMicrosoftCards = localStorage.getItem('admin-microsoft-cards');
     if (savedMicrosoftCards) {
@@ -31,30 +25,20 @@ export default function Home() {
     }
   }, []);
 
-  const features = [
-    {
-      icon: Bot,
-      title: 'Agentes Especialistas 24/7',
-      description: 'Um time virtual especializado em cada produto Vivo — Internet Dedicada, Voz, SIP Trunk, SD-WAN, Segurança, Microsoft 365 e muito mais — disponível sempre que você precisar.',
-      gradient: 'gradient-purple'
-    },
-    {
-      icon: DollarSign,
-      title: 'Preços Sempre Atualizados',
-      description: 'Tarifas negociadas em tempo real, sem planilhas ou trocas de e-mail: consulte valores e condições com um só clique.',
-      gradient: 'gradient-silver'
-    },
-    {
-      icon: Zap,
-      title: 'Interface Ágil e Intuitiva',
-      description: 'Compare pacotes, simule cenários e gere propostas em segundos — ganhe tempo para atender ainda mais clientes.',
-      gradient: 'gradient-purple'
-    }
-  ];
+  // Mapear ícones por nome
+  const iconMap = {
+    Bot,
+    DollarSign, 
+    Zap
+  };
+
+  if (!homeData) {
+    return <div>Carregando...</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* Card de Atualizações - Carregado da administração */}
+      {/* Card de Atualizações - Carregado dos dados centralizados */}
       <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30 shadow-modern">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
@@ -63,48 +47,51 @@ export default function Home() {
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                {updateData.title}
+                {homeData.updates.title}
               </h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                {updateData.description}
+                {homeData.updates.description}
               </p>
               <p className="text-xs text-muted-foreground/70 mt-2">
-                Atualizado em: {updateData.date}
+                Atualizado em: {homeData.updates.date}
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Header */}
+      {/* Header - Dados centralizados */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-foreground leading-tight">
-          Sua nova central de inteligência comercial
+          {homeData.welcome.title}
         </h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Olá, consultor Vivo! Seja muito bem-vindo ao sistema que vai transformar seu dia a dia em vendas. Aqui, tudo o que você precisa está reunido num só lugar.
+          {homeData.welcome.message}
         </p>
       </div>
 
-      {/* Features Grid */}
+      {/* Features Grid - Dados centralizados */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {features.map((feature, index) => (
-          <Card key={index} className="group hover:shadow-modern transition-all duration-300 hover:-translate-y-1 border-0 shadow-card">
-            <CardHeader className="pb-4">
-              <div className={`w-12 h-12 rounded-xl ${feature.gradient} flex items-center justify-center mb-4 shadow-card`}>
-                <feature.icon className="w-6 h-6 text-white" />
-              </div>
-              <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                {feature.title}
-              </CardTitle>
-            </CardHeader>
+        {homeData.features.map((feature, index) => {
+          const IconComponent = iconMap[feature.icon];
+          return (
+            <Card key={index} className="group hover:shadow-modern transition-all duration-300 hover:-translate-y-1 border-0 shadow-card">
+              <CardHeader className="pb-4">
+                <div className={`w-12 h-12 rounded-xl ${feature.gradient} flex items-center justify-center mb-4 shadow-card`}>
+                  <IconComponent className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {feature.title}
+                </CardTitle>
+              </CardHeader>
             <CardContent>
               <CardDescription className="text-muted-foreground leading-relaxed">
                 {feature.description}
               </CardDescription>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       {/* Cards Dinâmicos - Licenças Microsoft */}

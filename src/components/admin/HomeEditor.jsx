@@ -5,62 +5,27 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Save, RotateCcw, Edit3, Plus, Trash2 } from 'lucide-react';
+import { loadHomeData, saveHomeData } from '../../data/homeData';
 
 const HomeEditor = () => {
-  const [homeData, setHomeData] = useState({
-    hero_title: 'Plataforma do Vini',
-    hero_subtitle: 'Central Comercial',
-    hero_description: 'Sua central de produtos e serviços Vivo para empresas',
-    welcome_title: 'Bem-vindo à Plataforma do Vini',
-    welcome_description: 'Aqui você encontra todos os produtos e serviços Vivo para sua empresa. Navegue pelo menu lateral para conhecer nossas soluções.',
-    features: [
-      {
-        id: 1,
-        title: 'Produtos Vivo',
-        description: 'Conheça nossa linha completa de produtos para empresas',
-        icon: '📱'
-      },
-      {
-        id: 2,
-        title: 'Suporte Especializado',
-        description: 'Atendimento personalizado para sua empresa',
-        icon: '🎧'
-      },
-      {
-        id: 3,
-        title: 'Soluções Integradas',
-        description: 'Combine produtos para otimizar seus resultados',
-        icon: '🔧'
-      }
-    ],
-    contact_info: {
-      phone: '(11) 99999-9999',
-      email: 'contato@plataformadovini.com.br',
-      address: 'São Paulo, SP'
-    }
-  });
+  const [homeData, setHomeData] = useState(null);
   const [saving, setSaving] = useState(false);
   const [editingTitles, setEditingTitles] = useState({});
 
   useEffect(() => {
-    // Carregar dados da página Home do localStorage ou API
-    const savedData = localStorage.getItem('home-page-data');
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        setHomeData(parsedData);
-      } catch (error) {
-        console.error('Erro ao carregar dados da página Home:', error);
-      }
-    }
+    // Carregar dados centralizados da Home
+    const data = loadHomeData();
+    setHomeData(data);
   }, []);
-
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Salvar no localStorage por enquanto (depois será API)
-      localStorage.setItem('home-page-data', JSON.stringify(homeData));
-      alert('Página Home atualizada com sucesso!');
+      const success = saveHomeData(homeData);
+      if (success) {
+        alert('Página Home atualizada com sucesso!');
+      } else {
+        throw new Error('Falha ao salvar dados');
+      }
     } catch (error) {
       alert('Erro ao salvar: ' + error.message);
     } finally {
@@ -70,67 +35,18 @@ const HomeEditor = () => {
 
   const handleReset = () => {
     if (confirm('Tem certeza que deseja restaurar os dados padrão da página Home?')) {
-      const defaultData = {
-        hero_title: 'Plataforma do Vini',
-        hero_subtitle: 'Central Comercial',
-        hero_description: 'Sua central de produtos e serviços Vivo para empresas',
-        welcome_title: 'Bem-vindo à Plataforma do Vini',
-        welcome_description: 'Aqui você encontra todos os produtos e serviços Vivo para sua empresa. Navegue pelo menu lateral para conhecer nossas soluções.',
-        features: [
-          {
-            id: 1,
-            title: 'Produtos Vivo',
-            description: 'Conheça nossa linha completa de produtos para empresas',
-            icon: '📱'
-          },
-          {
-            id: 2,
-            title: 'Suporte Especializado',
-            description: 'Atendimento personalizado para sua empresa',
-            icon: '🎧'
-          },
-          {
-            id: 3,
-            title: 'Soluções Integradas',
-            description: 'Combine produtos para otimizar seus resultados',
-            icon: '🔧'
-          }
-        ],
-        contact_info: {
-          phone: '(11) 99999-9999',
-          email: 'contato@plataformadovini.com.br',
-          address: 'São Paulo, SP'
-        }
-      };
-      setHomeData(defaultData);
-      alert('Dados restaurados para o padrão!');
+      const data = loadHomeData();
+      setHomeData(data);
     }
   };
 
-  const updateField = (field, value) => {
-    setHomeData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const updateNestedField = (parent, field, value) => {
+  const updateField = (section, field, value) => {
     setHomeData(prev => ({
       ...prev,
-      [parent]: {
-        ...prev[parent],
+      [section]: {
+        ...prev[section],
         [field]: value
       }
-    }));
-  };
-
-  const addFeature = () => {
-    const newFeature = {
-      id: Date.now(),
-      title: 'Nova Funcionalidade',
-      description: 'Descrição da nova funcionalidade',
-      icon: '⭐'
-    };
-    setHomeData(prev => ({
-      ...prev,
-      features: [...prev.features, newFeature]
     }));
   };
 
@@ -143,12 +59,30 @@ const HomeEditor = () => {
     }));
   };
 
+  const addFeature = () => {
+    const newFeature = {
+      id: Date.now().toString(),
+      icon: 'Zap',
+      title: 'Nova Funcionalidade',
+      description: 'Descrição da nova funcionalidade',
+      gradient: 'gradient-purple'
+    };
+    setHomeData(prev => ({
+      ...prev,
+      features: [...prev.features, newFeature]
+    }));
+  };
+
   const removeFeature = (featureId) => {
     setHomeData(prev => ({
       ...prev,
       features: prev.features.filter(feature => feature.id !== featureId)
     }));
   };
+
+  if (!homeData) {
+    return <div>Carregando...</div>;
+  }
 
   const emojis = ['📱', '🎧', '🔧', '💼', '🌐', '📊', '⚡', '🚀', '💡', '🎯', '🔥', '⭐'];
 
