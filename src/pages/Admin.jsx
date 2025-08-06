@@ -10,6 +10,7 @@ import { Settings, Bell, Edit, Plus, Trash2, Bot, Package, Eye, EyeOff } from 'l
 import ProductEditor from '@/components/admin/ProductEditor';
 import ProductCreator from '@/components/admin/ProductCreator';
 import ProductOrderManager from '@/components/admin/ProductOrderManager';
+import HomeEditor from '@/components/admin/HomeEditor';
 
 export default function Admin() {
   // Estados para Atualizações
@@ -103,7 +104,7 @@ export default function Admin() {
 
       {/* Tabs */}
       <Tabs defaultValue="atualizacoes" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="atualizacoes" className="flex items-center gap-2">
             <Bell className="w-4 h-4" />
             Atualizações
@@ -119,6 +120,10 @@ export default function Admin() {
           <TabsTrigger value="ordem-produtos" className="flex items-center gap-2">
             <Edit className="w-4 h-4" />
             Ordem dos Produtos
+          </TabsTrigger>
+          <TabsTrigger value="home-editor" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Editor da Home
           </TabsTrigger>
         </TabsList>
 
@@ -264,6 +269,10 @@ export default function Admin() {
           <ProductOrderManager />
         </TabsContent>
 
+        {/* Aba Editor da Home */}
+        <TabsContent value="home-editor">
+          <HomeEditor />
+        </TabsContent>
 
       </Tabs>
     </div>
