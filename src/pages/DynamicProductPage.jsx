@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExternalLink, Star, DollarSign, FileText, Bot, ArrowLeft } from 'lucide-react';
-import { loadProductData } from '@/data/productData';
+import { loadRealProduct } from '@/data/realProductData';
 
 export default function DynamicProductPage() {
   const { productId } = useParams();
@@ -14,12 +14,12 @@ export default function DynamicProductPage() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    loadProductDataLocal();
+    loadProductDataReal();
   }, [productId]);
 
-  const loadProductDataLocal = () => {
+  const loadProductDataReal = () => {
     try {
-      const data = loadProductData(productId);
+      const data = loadRealProduct(productId);
       
       if (!data) {
         setNotFound(true);
@@ -30,7 +30,7 @@ export default function DynamicProductPage() {
       setProductData(data);
       setLoading(false);
     } catch (error) {
-      console.error('Erro ao carregar produto:', error);
+      console.error('Erro ao carregar produto REAL:', error);
       setNotFound(true);
       setLoading(false);
     }
